@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -71,6 +72,10 @@ public final class ZipUtil
         }
     }
 
+    public static void zipFile(File file, ZipOutputStream zos) {
+        zipFile(file, "", zos);
+    }
+
     public static void zipFile(File file, String relativePath, ZipOutputStream zos)
     {
         InputStream is = null;
@@ -129,7 +134,7 @@ public final class ZipUtil
      * @param fileName
      * @param path
      */
-    public static void unzip(String fileName, String path)
+    public static void unzip(String fileName, Path path)
     {
         FileOutputStream fos = null;
         InputStream is = null;
@@ -143,10 +148,10 @@ public final class ZipUtil
                 if (!zn.isDirectory())
                 {
                     is = zf.getInputStream(zn);
-                    File f = new File(path + zn.getName());
+                    File f = new File(path.resolve(zn.getName()).toString());
                     File file = f.getParentFile();
                     file.mkdirs();
-                    fos = new FileOutputStream(path + zn.getName());
+                    fos = new FileOutputStream(path.resolve(zn.getName()).toString());
                     int len = 0;
                     byte bufer[] = new byte[BUFFERSIZE];
                     while (-1 != (len = is.read(bufer)))

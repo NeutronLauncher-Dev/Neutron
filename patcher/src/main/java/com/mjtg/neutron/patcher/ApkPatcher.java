@@ -1,74 +1,79 @@
 package com.mjtg.neutron.patcher;
 
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.ZipOutputStream;
+
 
 public class ApkPatcher {
 
-    public static void start(final String path,final String dexPath,final String substratePath,final String insertPath){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    sync(path,dexPath,substratePath,insertPath);
-                }catch (IOException e){
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+    public static void start(Path apkPath, Path newDexPath, List<Path> librariesToPatch) {
+
+        Path unpackedDir = unpackApk(apkPath);
+
+        transformDex(unpackedDir, newDexPath);
+
+        injectLibraries(
+                unpackedDir.resolve("lib").resolve("armeabi-v7a"),
+                librariesToPatch
+        );
+
+        repackApk(
+                unpackedDir,
+                apkPath.getParent().resolve("mc-patched.apk")
+        );
+
+        System.out.println("Patched successfully");
     }
 
-    private static void copy(String from,String to) throws IOException{
-        FileChannel inputChannel=null;
-        FileChannel outputChannel=null;
-        new File(to).createNewFile();
-        try{
-            inputChannel=new FileInputStream(new File(from)).getChannel();
-            outputChannel=new FileOutputStream(to).getChannel();
-            outputChannel.transferFrom(inputChannel,0,inputChannel.size());
-        } finally {
-            if (outputChannel!=null) {
-                inputChannel.close();
-            }
-            if (outputChannel!=null) {
-                outputChannel.close();
-            }
+    private static Path unpackApk(Path apk) {
+        System.out.println("Unpacking Apk...");
+        Path unpackedDir = apk.getParent().resolve("temp");
+        ZipUtil.unzip(apk.toString(), unpackedDir);
+        return unpackedDir;
+    }
+
+    private static void transformDex(Path unpackedDir, Path newDexFilePath) {
+        System.out.println("Injecting dex...");
+        Path dexPath= unpackedDir.resolve("classes.dex");
+        dexPath.toFile().delete();
+        copy(newDexFilePath, dexPath);
+    }
+
+    private static void injectLibraries(Path libDir, List<Path> toInjectLibsPath) {
+        System.out.println("Injecting libs...");
+        for (Path p : toInjectLibsPath) {
+            copy(p, libDir.resolve(p.getFileName()));
         }
     }
 
-    private static void sync(String path,String dexPath,String substratePath,String insertPath) throws IOException {
-        String s=File.separator;
-        File file=new File(path);
+    private static void repackApk(Path unpackedDir, Path newApkPath) {
+        try {
+            System.out.println("Repacking Apk...");
+            newApkPath.toFile().createNewFile();
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(newApkPath.toFile()));
+            ZipUtil.zipFile(unpackedDir.toFile(), zos);
+            zos.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        //unpack
-        System.out.println("Unpacking apk...");
-        ZipUtil.unzip(file.getPath(),file.getParent()+s+"temp"+s);
-        String libPath=file.getParent()+String.format("%stemp%slib%sarmeabi-v7a",s,s,s);
-        File dexFile=new File(file.getParent()+String.format("%stemp%sclasses.dex",s,s));
 
-        //inject dex
-        System.out.println("Inject dex...");
-        dexFile.delete();
-        copy(dexPath,dexFile.getPath());
-
-        //inject libs
-        System.out.println("Inject libs...");
-        copy(substratePath,libPath+s+"libsubstrate.so");
-        copy(insertPath,libPath+s+"libneutron.so");
-
-        //packfile
-        System.out.println("Packing libs...");
-        file.delete();
-        File f=new File(file.getPath()+".apk");
-        f.createNewFile();
-        ZipOutputStream zos=new ZipOutputStream(new FileOutputStream(f));
-        ZipUtil.zipFile(new File(file.getParent()+s+"temp"),"",zos);
-        zos.close();
-        System.out.println("Patched successfully");
+    private static void copy(Path from,Path to) {
+        try {
+            Files.copy(from.toFile(), to.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

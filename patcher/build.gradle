@@ -1,9 +1,14 @@
-apply plugin: 'java-library'
+apply plugin: 'application'
+apply plugin: "com.github.johnrengelman.shadow"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:log:28.0.0'
+    implementation("com.google.guava:guava:28.2-jre")
+    implementation "com.beust:jcommander:1.71"
 }
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+mainClassName = 'com.mjtg.neutron.patcher.Main'
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
