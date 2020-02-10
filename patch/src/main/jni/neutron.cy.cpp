@@ -2,10 +2,28 @@
 #include <jni.h>
 //正在施工
 
-//JNI EXPORT
+//algorithm
 
-//JNIEXPORT jobject JNICALL Java_com_mojang_minecraftpe_MainActivity_JNITools_getJNI(JNIEnv *env, jobject obj) {
-//}
+char* JstringToChar(JNIEnv* env, jstring jstr) {
+	if(jstr == NULL) {
+		return NULL;
+	}
+	char* rtn = NULL;
+	jclass clsstring = env->FindClass("java/lang/String");
+	jstring strencode = env->NewStringUTF("utf-8");
+	jmethodID mid = env->GetMethodID(clsstring, "getBytes",
+			"(Ljava/lang/String;)[B");
+	jbyteArray barr = (jbyteArray) env->CallObjectMethod(jstr, mid, strencode);
+	jsize alen = env->GetArrayLength(barr);
+	jbyte* ba = env->GetByteArrayElements(barr, JNI_FALSE);
+	if (alen > 0) {
+		rtn = (char*) malloc(alen + 1);
+		memcpy(rtn, ba, alen);
+		rtn[alen] = 0;
+	}
+	env->ReleaseByteArrayElements(barr, ba, 0);
+	return rtn;
+}
 
 
 //METHODS INSTANCE
@@ -38,20 +56,54 @@ void onBlockDestroyedByPlayer(void*){
 }
 */
 
-//MS HOOK
+void putNativeLog(jstring){
+    __android_log_print(ANDROID_LOG_INFO, "native", JstringToChar(jstring));
+}
 
-JNIEXPORT jint JNI_OnLoad(JavaVM*,void*){
-/*
-    void * image = dlopen("libminecraftpe.so",RTLD_LAZY);
-    MSHookFunction(dlsym(image,"_ZN9Explosion7explodeEv"),(void*)&onExplode,(void*)&explode);
-    MSHookFunction(dlsym(image,"_ZN15MinecraftClient4initEv"),(void*)&onMinecraftClientInit,(void**)&minecraftClientInit);
-    MSHookFunction(dlsym(image,"_ZN13MinecraftGame6onTickEv"),(void*)&onTick,(void**)&tick);
-    MSHookFunction(dlsym(image,"_ZN18BlockEventListener15onBlockModifiedERK8BlockPosRK5BlockS5_"),(void*)&onBlockModified,(void**)&blockModified);
-    MSHookFunction(dlsym(image,"_ZN18BlockEventListener24onBlockDestroyedByPlayerER6PlayerSsRK8BlockPos"),(void*)&onBlockDestroyedByPlayer,(void**)&blockDestroyedByPlayer);
+//MS HOOK & D
 
-    getGuiData=(void*(*)(void*)) dlsym(image,"_ZN15MinecraftClient10getGuiDataEv");
-    displayClientMessage= (void(*)(void*,std::string const&)) dlsym(image,"_ZN7GuiData20displayClientMessageERKSs");
+static JNINativeMethod getMethods[] = {
+        {"putNativeLog","(Ljava/lang/String;)V",(void*)putNativeLog},
+};
+
+static int registerNativeMethods(JNIEnv* env, const char* className,JNINativeMethod* getMethods,int methodsNum){
+    jclass clazz;
+    clazz = env->FindClass(className);
+    if(clazz == NULL){
+        return JNI_FALSE;
+    }
+    if(env->RegisterNatives(clazz,getMethods,methodsNum) < 0){
+        return JNI_FALSE;
+    }
+    return JNI_TRUE;
+}
+
+static int registerNatives(JNIEnv* env){
+    const char* className  = "com/mjtg/neutron/runtime/NeutronHooks";
+    return registerNativeMethods(env,className,getMethods, sizeof(getMethods)/ sizeof(getMethods[0]));
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved){
+
+    /*
+        void * image = dlopen("libminecraftpe.so",RTLD_LAZY);
+        MSHookFunction(dlsym(image,"_ZN9Explosion7explodeEv"),(void*)&onExplode,(void*)&explode);
+        MSHookFunction(dlsym(image,"_ZN15MinecraftClient4initEv"),(void*)&onMinecraftClientInit,(void**)&minecraftClientInit);
+        MSHookFunction(dlsym(image,"_ZN13MinecraftGame6onTickEv"),(void*)&onTick,(void**)&tick);
+        MSHookFunction(dlsym(image,"_ZN18BlockEventListener15onBlockModifiedERK8BlockPosRK5BlockS5_"),(void*)&onBlockModified,(void**)&blockModified);
+        MSHookFunction(dlsym(image,"_ZN18BlockEventListener24onBlockDestroyedByPlayerER6PlayerSsRK8BlockPos"),(void*)&onBlockDestroyedByPlayer,(void**)&blockDestroyedByPlayer);
+
+        getGuiData=(void*(*)(void*)) dlsym(image,"_ZN15MinecraftClient10getGuiDataEv");
+        displayClientMessage= (void(*)(void*,std::string const&)) dlsym(image,"_ZN7GuiData20displayClientMessageERKSs");
     */
-    return JNI_VERSION_1_6;
 
+    JNIEnv* env = NULL;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+    assert(env != NULL);
+    if(!registerNatives(env)){
+        return -1;
+    }
+    return JNI_VERSION_1_6;
 }
