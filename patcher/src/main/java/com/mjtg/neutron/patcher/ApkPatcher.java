@@ -2,6 +2,8 @@ package com.mjtg.neutron.patcher;
 
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import com.googlecode.d2j.dex.Dex2jar;
+import com.googlecode.dex2jar.tools.BaksmaliBaseDexExceptionHandler;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,11 +17,15 @@ import java.util.zip.ZipOutputStream;
 
 public class ApkPatcher {
 
-    public static void start(Path apkPath, Path newDexPath, List<Path> librariesToPatch) {
+    public static void start(Path apkPath, Path runtimeJarPath, List<Path> librariesToPatch) {
+        //准备临时dex临时文件
+        Path dexTmpPath = apkPath.getParent().resolve("dexTemp");
+        dexTmpPath.toFile().mkdir();
+
 
         Path unpackedDir = unpackApk(apkPath);
 
-        transformDex(unpackedDir, newDexPath);
+        DexPatcher.transformDex(unpackedDir, dexTmpPath, runtimeJarPath);
 
         injectLibraries(
                 unpackedDir.resolve("lib").resolve("armeabi-v7a"),
@@ -41,25 +47,18 @@ public class ApkPatcher {
         return unpackedDir;
     }
 
-    private static void transformDex(Path unpackedDir, Path newDexFilePath) {
-        System.out.println("Injecting dex...");
-        Path dexPath= unpackedDir.resolve("classes.dex");
-        dexPath.toFile().delete();
-        copy(newDexFilePath, dexPath);
-    }
-
-    private static void injectLibraries(Path libDir, List<Path> toInjectLibsPath) {
+    private static void injectLibraries(Path libDir, List<Path> toInjectLibs) {
         System.out.println("Injecting libs...");
-        for (Path p : toInjectLibsPath) {
+        for (Path p : toInjectLibs) {
             copy(p, libDir.resolve(p.getFileName()));
         }
     }
 
-    private static void repackApk(Path unpackedDir, Path newApkPath) {
+    private static void repackApk(Path unpackedDir, Path newApk) {
         try {
             System.out.println("Repacking Apk...");
-            newApkPath.toFile().createNewFile();
-            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(newApkPath.toFile()));
+            newApk.toFile().createNewFile();
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(newApk.toFile()));
             ZipUtil.zipFile(unpackedDir.toFile(), zos);
             zos.close();
         } catch (IOException e) {
