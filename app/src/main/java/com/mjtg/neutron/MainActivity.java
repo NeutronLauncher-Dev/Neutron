@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         card_manage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(MainActivity.this,FileActivity.class);
+                Intent intent=new Intent(MainActivity.this,SelectActivity.class);
                 startActivity(intent);
             }
         });

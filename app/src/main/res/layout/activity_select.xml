@@ -6,7 +6,7 @@
     android:background="@color/background">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/top_bar"
@@ -18,8 +18,19 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
+    <TextView
+        android:id="@+id/add_mod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:text="+"
+        android:textColor="@color/sub_text"
+        android:textSize="36sp"
+        app:layout_constraintRight_toRightOf="parent" />
+
     <ListView
+        android:id="@+id/mod_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 </android.support.constraint.ConstraintLayout>
