@@ -24,12 +24,12 @@ public final class ZipUtil
 {
 
     /**
-     * 缓冲大小
+     *
      */
     private static int BUFFERSIZE = 2 << 10;
 
     /**
-     * 压缩
+     *
      * @param paths
      * @param fileName
      */
@@ -130,7 +130,7 @@ public final class ZipUtil
     }
 
     /**
-     * 解压缩
+     *
      * @param fileName
      * @param path
      */

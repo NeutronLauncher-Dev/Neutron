@@ -28,4 +28,9 @@
         <item name="android:textSize">18sp</item>
         <item name="android:background">@android:color/transparent</item>
     </style>
+    <style name="row_text">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
 </resources>

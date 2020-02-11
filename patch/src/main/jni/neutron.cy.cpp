@@ -1,5 +1,9 @@
 #include "substrate.h"
+#include <android/log.h>
 #include <jni.h>
+#include <stdio.h>
+#include <cstring>
+#include <assert.h>
 //正在施工
 
 //algorithm
@@ -56,8 +60,8 @@ void onBlockDestroyedByPlayer(void*){
 }
 */
 
-void putNativeLog(jstring){
-    __android_log_print(ANDROID_LOG_INFO, "native", JstringToChar(jstring));
+void putNativeLog(jstring jstr){
+    __android_log_print(ANDROID_LOG_INFO, "native", "233");
 }
 
 //MS HOOK & D

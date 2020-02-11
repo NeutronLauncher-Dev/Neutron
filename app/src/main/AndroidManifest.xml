@@ -14,7 +14,13 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter
+                android:label="@string/title_activity_main"
+                android:priority="0" >
+                <action android:name="android.intent.action.VIEW" />
+            </intent-filter>
         </activity>
+        <activity android:name=".FileActivity" />
     </application>
 
 </manifest>
