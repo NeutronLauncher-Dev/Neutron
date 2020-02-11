@@ -7,4 +7,8 @@
     <color name="card">#ffffff</color>
     <color name="black">#000000</color>
     <color name="background">#b0b0b0</color>
+    <color name="top_bar">#595959</color>
+    <color name="title">#ffffff</color>
+    <color name="sub_text">#b9b9b9</color>
+    <color name="sub_text_">#909090</color>
 </resources>
