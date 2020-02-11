@@ -13,8 +13,8 @@ public class Main {
 
     public static class CommandArgs {
 
-        @Parameter(names = "-dex", description = "path to the new Dex file to put in")
-        public String dexFile;
+        @Parameter(names = "-rtjar", description = "path to the neutron runtime jar")
+        public String rtJar;
 
         @Parameter(names = "-lib", description = "path to library to put in")
         public List<String> libraries = new ArrayList<>();
@@ -32,10 +32,10 @@ public class Main {
                 .parse(args);
 
         Path apkPath = Paths.get(cmdArgs.apkFile);
-        Path newDexPath = Paths.get(cmdArgs.dexFile);
+        Path rtJarPath = Paths.get(cmdArgs.rtJar);
         List<Path> libs = cmdArgs.libraries.stream().map(i -> Paths.get(i)).collect(Collectors.toList());
 
-        ApkPatcher.start(apkPath, newDexPath, libs);
+        ApkPatcher.start(apkPath, rtJarPath, libs);
     }
 
 }

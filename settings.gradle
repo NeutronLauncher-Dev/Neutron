@@ -1,1 +1,1 @@
-include ':app', ':patch', ':patcher'
+include ':app', ':patcher'

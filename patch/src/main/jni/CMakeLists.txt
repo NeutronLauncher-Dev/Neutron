@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 
+
+
 find_library( log-lib log )
 
 add_library( substrate SHARED IMPORTED )
@@ -16,10 +18,12 @@ set_target_properties(
         ${CMAKE_CURRENT_SOURCE_DIR}/libsubstrate-dvm.so
 )
 
+
 add_library(
     neutron
     SHARED
-    neutron.cy.cpp
+    dummy.cpp
+    #neutron.cy.cpp
 )
 
 target_link_libraries(

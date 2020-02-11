@@ -2,7 +2,8 @@ apply plugin: 'application'
 apply plugin: "com.github.johnrengelman.shadow"
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs/dex2jar', include: ['*.jar'])
+    implementation fileTree(dir: 'libs/javaassist', include: ['*.jar'])
     implementation("com.google.guava:guava:28.2-jre")
     implementation "com.beust:jcommander:1.71"
 }
