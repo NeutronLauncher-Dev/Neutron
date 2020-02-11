@@ -66,8 +66,8 @@ void onBlockDestroyedByPlayer(void*){
 }
 */
 
-void putNativeLog(jstring){
-    __android_log_print(ANDROID_LOG_INFO, "native", JstringToChar(jstring));
+void putNativeLog(jstring str){
+    //__android_log_print(ANDROID_LOG_INFO, "native", JstringToChar(env, str));
 }
 
 //MS HOOK & D
