@@ -13,10 +13,10 @@ public class Main {
 
     public static class CommandArgs {
 
-        @Parameter(names = "-rtjar", description = "path to the neutron runtime jar")
-        public String rtJar;
+        @Parameter(names = "-rtjar", description = "path to the jars that contains the java classes to put in")
+        public List<String> rtJars = new ArrayList<>();
 
-        @Parameter(names = "-lib", description = "path to library to put in")
+        @Parameter(names = "-lib", description = "path to native library to put in")
         public List<String> libraries = new ArrayList<>();
 
         @Parameter(names = "-apk", description = "path to the apk to patch")
@@ -32,10 +32,10 @@ public class Main {
                 .parse(args);
 
         Path apkPath = Paths.get(cmdArgs.apkFile);
-        Path rtJarPath = Paths.get(cmdArgs.rtJar);
+        List<Path> rtJars = cmdArgs.rtJars.stream().map(i -> Paths.get(i)).collect(Collectors.toList());
         List<Path> libs = cmdArgs.libraries.stream().map(i -> Paths.get(i)).collect(Collectors.toList());
 
-        ApkPatcher.start(apkPath, rtJarPath, libs);
+        ApkPatcher.start(apkPath, rtJars, libs);
     }
 
 }

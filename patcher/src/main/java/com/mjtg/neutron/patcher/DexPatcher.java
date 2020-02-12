@@ -2,36 +2,31 @@ package com.mjtg.neutron.patcher;
 
 import com.googlecode.d2j.dex.Dex2jar;
 import com.googlecode.dex2jar.tools.BaksmaliBaseDexExceptionHandler;
-import com.googlecode.dex2jar.tools.BaseCmd;
-import com.googlecode.dex2jar.tools.Jar2Dex;
 
-import java.io.BufferedOutputStream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.io.outputstream.ZipOutputStream;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.ZipOutputStream;
+import java.util.Objects;
 
-import javassist.ClassClassPath;
 import javassist.ClassPool;
-import javassist.CodeConverter;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 
-import static com.googlecode.dex2jar.tools.BaseCmd.createZip;
-import static com.googlecode.dex2jar.tools.BaseCmd.walkJarOrDir;
-import static com.mjtg.neutron.patcher.ZipUtil.zipFile;
 
 public class DexPatcher {
 
@@ -41,7 +36,7 @@ public class DexPatcher {
      * @param dexTmpDir the directory for temp use by dex transformer, must exist before calling
      * @param runtimeJar the path to the jar that contains the neutron runtime
      */
-    public static void transformDex(Path unpackedDir, Path dexTmpDir, Path runtimeJar) {
+    public static void transformDex(Path unpackedDir, Path dexTmpDir, List<Path> runtimeJar) {
         System.out.println("Injecting dex...");
 
         Path dexPath =  unpackedDir.resolve("classes.dex");
@@ -85,9 +80,16 @@ public class DexPatcher {
         }
     }
 
-    private static void insertJarClasses(Path unpackedDexDir, Path jar) {
-        System.out.println("Inserting classes from rtjar...");
-        ZipUtil.unzip(jar.toAbsolutePath().toString(), unpackedDexDir.toAbsolutePath());
+    private static void insertJarClasses(Path unpackedDexDir, List<Path> jars) {
+        System.out.println("Inserting java classes in jar");
+        for (Path jar : jars) {
+            System.out.println("inserting "+jar.getFileName());
+            try {
+                new ZipFile(jar.toAbsolutePath().toString()).extractAll(unpackedDexDir.toAbsolutePath().toString());
+            } catch (ZipException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static void performDex2Jar(Path resultDir, Path dexPath) {
@@ -113,11 +115,10 @@ public class DexPatcher {
         Path tmp = null;
         try {
             try {
-                Path realJar = Files.createTempFile("d2j", ".jar");
+                final Path d2jDir = Files.createTempDirectory("d2j");
+                Path realJar = d2jDir.resolve("d2j-"+ Instant.now().getEpochSecond()+".jar");
                 tmp = realJar;
-                ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(realJar.toAbsolutePath().toString())));
-                zipFile(sourceDir.toFile(), zos);
-                zos.close();
+                ZipUtil.zipDirectory(sourceDir, realJar.toAbsolutePath());
 
                 Class<?> c = Class.forName("com.android.dx.command.Main");
                 Method m = c.getMethod("main", String[].class);
@@ -134,14 +135,6 @@ public class DexPatcher {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void copy(Path from,Path to) {
-        try {
-            com.google.common.io.Files.copy(from.toFile(), to.toFile());
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -1,191 +1,56 @@
 package com.mjtg.neutron.patcher;
 
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.io.outputstream.ZipOutputStream;
+import net.lingala.zip4j.model.ZipParameters;
+
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
+public class ZipUtil {
 
-/**
- *
- * @version 1.0
- * @since 2015-9-11
- * @category com.feng.util
- *
- */
-public final class ZipUtil
-{
-
-    /**
-     * 缓冲大小
-     */
-    private static int BUFFERSIZE = 2 << 10;
-
-    /**
-     * 压缩
-     * @param paths
-     * @param fileName
-     */
-    public static void zip(String[] paths, String fileName)
-    {
-
-        ZipOutputStream zos = null;
-        try
-        {
-            zos = new ZipOutputStream(new FileOutputStream(fileName));
-            for(String filePath : paths)
-            {
-                //递归压缩文件
-                File file = new File(filePath);
-                String relativePath = file.getName();
-                if(file.isDirectory())
-                {
-                    relativePath += File.separator;
-                }
-                zipFile(file, relativePath, zos);
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                if(zos != null)
-                {
-                    zos.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+    public static void unzipDirectory(Path zipPath, Path intoDirectoryPath) {
+        try {
+            new ZipFile(zipPath.toAbsolutePath().toString()).extractAll(intoDirectoryPath.toAbsolutePath().toString());
+        } catch (ZipException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static void zipFile(File file, ZipOutputStream zos) {
-        zipFile(file, "", zos);
-    }
-
-    public static void zipFile(File file, String relativePath, ZipOutputStream zos)
-    {
-        InputStream is = null;
-        try
-        {
-            if(!file.isDirectory())
-            {
-                ZipEntry zp = new ZipEntry(relativePath);
-                zos.putNextEntry(zp);
-                is = new FileInputStream(file);
-                byte[] buffer = new byte[BUFFERSIZE];
-                int length = 0;
-                while ((length = is.read(buffer)) >= 0)
-                {
-                    zos.write(buffer, 0, length);
-                }
-                zos.flush();
-                zos.closeEntry();
-            }
-            else
-            {
-                String tempPath = null;
-                for(File f: file.listFiles())
-                {
-                    tempPath = relativePath + f.getName();
-                    if(f.isDirectory())
-                    {
-                        tempPath += File.separator;
+    public static void zipDirectory(Path directoryPath, Path zipPath) {
+        try (FileOutputStream fis = new FileOutputStream(zipPath.toAbsolutePath().toString())){
+            try(ZipOutputStream zos = new ZipOutputStream(fis)) {
+                java.nio.file.Files.walkFileTree(directoryPath, new SimpleFileVisitor<Path>() {
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        ZipParameters zipParameters = new ZipParameters();
+                        String fileNameWithPath = directoryPath.relativize(file).toString();
+                        //bug: you need to have \ as pathSeparator to please android!
+                        if(File.separatorChar != '/') {
+                            if(File.separatorChar == '\\') {
+                                fileNameWithPath.replace('\\','/');
+                            } else {
+                                //we dont know how to fix it for you, so we fail to tell you about it
+                                throw new AssertionError("error in translating path separator, please add it here!");
+                            }
+                        }
+                        zipParameters.setFileNameInZip(fileNameWithPath);
+                        zos.putNextEntry(zipParameters);
+                        java.nio.file.Files.copy(file, zos);
+                        zos.closeEntry();
+                        return FileVisitResult.CONTINUE;
                     }
-                    zipFile(f, tempPath, zos);
-                }
+                });
             }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                if(is != null)
-                {
-                    is.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    /**
-     * @param fileName
-     * @param path
-     */
-    public static void unzip(String fileName, Path path)
-    {
-        FileOutputStream fos = null;
-        InputStream is = null;
-        try
-        {
-            ZipFile zf = new ZipFile(new File(fileName));
-            Enumeration en = zf.entries();
-            while (en.hasMoreElements())
-            {
-                ZipEntry zn = (ZipEntry) en.nextElement();
-                if (!zn.isDirectory())
-                {
-                    is = zf.getInputStream(zn);
-                    File f = new File(path.resolve(zn.getName()).toString());
-                    File file = f.getParentFile();
-                    file.mkdirs();
-                    fos = new FileOutputStream(path.resolve(zn.getName()).toString());
-                    int len = 0;
-                    byte bufer[] = new byte[BUFFERSIZE];
-                    while (-1 != (len = is.read(bufer)))
-                    {
-                        fos.write(bufer, 0, len);
-                    }
-                    fos.close();
-                }
-            }
-        }
-        catch (ZipException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                if(null != is)
-                {
-                    is.close();
-                }
-                if(null != fos)
-                {
-                    fos.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
 }
