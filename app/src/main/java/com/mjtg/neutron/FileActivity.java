@@ -8,15 +8,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 public class FileActivity extends AppCompatActivity {
-    File dir;
+    public File dir;
     ListView list;
     TextView pathView;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file);
+
+        GData.fileActivity=new WeakReference<>(this);
 
         dir= Environment.getExternalStorageDirectory();
         list=findViewById(R.id.file_list);

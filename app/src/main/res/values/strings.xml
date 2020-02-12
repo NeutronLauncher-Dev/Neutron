@@ -3,4 +3,5 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_file_activity">选择文件</string>
     <string name="title_select_activity">管理插件</string>
+    <string name="alert">提示</string>
 </resources>

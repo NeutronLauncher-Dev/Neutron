@@ -35,20 +35,38 @@ public class FileViewAdapter extends BaseAdapter {
 
     @Override
     @SuppressLint("ViewHolder")
-    public View getView(int i, View view, ViewGroup viewGroup) {
-        File[] files=dir.listFiles();
+    public View getView(final int i, View view, ViewGroup viewGroup) {
+        final File[] files=dir.listFiles();
+
+        final FileActivity fa= GData.fileActivity.get();
+        final SelectActivity sa=GData.selectActivity.get();
         View v= LayoutInflater.from(ctx).inflate(R.layout.file_row,null);
-        TextView tv=v.findViewById(R.id.name);
+        final TextView tv=v.findViewById(R.id.name);
         ImageView icon=v.findViewById(R.id.icon);
         tv.setText(files[i].getName());
 
-        if(files[i].isDirectory())
+        if(files[i].isDirectory()) {
             icon.setImageResource(R.drawable.folder);
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    fa.dir=files[i];
+                    fa.toPath();
+                }
+            });
+        }
         else{
             String[] ss=files[i].getName().split("\\.");
             String s=ss[ss.length-1];
-            if(s.equals("jar"))
+            if(s.equals("neu")) {
                 icon.setImageResource(R.drawable.pack);
+                GData.showAlert(ctx, fa.getWindow().getDecorView(), "你确定添加此模组吗", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        sa.addMod(GData.decodeModFromPath(files[i].getPath()));
+                    }
+                });
+            }
             else
                 icon.setImageResource(R.drawable.file);
         }
