@@ -1,5 +1,6 @@
 package com.mjtg.neutron;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -10,12 +11,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 
+import com.tbruyelle.rxpermissions2.RxPermissions;
+
+import java.util.function.Consumer;
+
 public class MainActivity extends AppCompatActivity {
     Button card_manage,card_launch,card_settings,card_shop;
+    private String[] permissionsGroup = new String[]{
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        startService(new Intent(this,TransService.class));
 
         card_manage=findViewById(R.id.button_manage);
         card_launch=findViewById(R.id.button_init);
@@ -29,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        RxPermissions permissions=new RxPermissions(this);
+        permissions.request(permissionsGroup);
 
     }
 

@@ -23,6 +23,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".FileActivity" />
+        <activity android:name=".SelectActivity" />
+        <activity android:name=".SettingActivity" />
+        <activity android:name=".AboutActivity" />
+
+        <service android:name=".TransService" />
     </application>
 
 </manifest>
