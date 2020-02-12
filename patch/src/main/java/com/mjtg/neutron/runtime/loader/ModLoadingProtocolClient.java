@@ -5,7 +5,6 @@ import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.java_websocket.server.WebSocketServer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
@@ -62,21 +60,24 @@ public class ModLoadingProtocolClient extends WebSocketClient {
         if(inProgress) {
             throw new IllegalStateException("the client does not support concurrent usage!");
         }
-        CompletableFuture<List<String>> fut = new CompletableFuture<>();
+        final CompletableFuture<List<String>> fut = new CompletableFuture<>();
 
         //handle response
         inProgress = true;
-        stringMessageConsumer = str -> {
-            inProgress = false;
-            stringMessageConsumer = null;
-            try {
-                final JSONArray json = new JSONArray(str);
-                List<String> resp = new ArrayList<>();
-                for (int i=0;i<json.length();i++) {
-                    resp.add(json.getString(i));
+        stringMessageConsumer = new Consumer<String>() {
+            @Override
+            public void accept(String str) {
+                inProgress = false;
+                stringMessageConsumer = null;
+                try {
+                    final JSONArray json = new JSONArray(str);
+                    List<String> resp = new ArrayList<>();
+                    for (int i = 0; i < json.length(); i++) {
+                        resp.add(json.getString(i));
+                    }
+                } catch (Exception e) {
+                    fut.completeExceptionally(e);
                 }
-            } catch(Exception e) {
-                fut.completeExceptionally(e);
             }
         };
 
@@ -98,14 +99,17 @@ public class ModLoadingProtocolClient extends WebSocketClient {
         if(inProgress) {
             throw new IllegalStateException("the client does not support concurrent usage!");
         }
-        CompletableFuture<ByteBuffer> fut = new CompletableFuture<>();
+        final CompletableFuture<ByteBuffer> fut = new CompletableFuture<>();
 
         //handle response
         inProgress = true;
-        bytesMessageConsumer = bytes -> {
-            inProgress = false;
-            stringMessageConsumer = null;
-            fut.complete(bytes);
+        bytesMessageConsumer = new Consumer<ByteBuffer>() {
+            @Override
+            public void accept(ByteBuffer bytes) {
+                inProgress = false;
+                stringMessageConsumer = null;
+                fut.complete(bytes);
+            }
         };
 
         //send request

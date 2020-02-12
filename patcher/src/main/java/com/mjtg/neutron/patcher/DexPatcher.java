@@ -71,10 +71,10 @@ public class DexPatcher {
             clazz.addField(CtField.make( "public com.mjtg.neutron.runtime.mixin.MCMainActivityMixin $neutron_mixin;", clazz));
 
             CtConstructor ctor = clazz.getConstructor("()V");
-            ctor.insertBefore("$0.$neutron_mixin = new com.mjtg.neutron.runtime.mixin.MCMainActivityMixin((Object)$0);");
+            ctor.insertBefore("$0.$neutron_mixin = new com.mjtg.neutron.runtime.mixin.MCMainActivityMixin();");
 
             CtMethod onCreate = clazz.getMethod("onCreate", "(Landroid/os/Bundle;)V");
-            onCreate.insertBefore("$0.$neutron_mixin.onCreate();");
+            onCreate.insertBefore("$0.$neutron_mixin.onCreate((Object)$0);");
 
             Path clazzFile = unpackedDexDir.resolve(Paths.get("com", "mojang", "minecraftpe").resolve("MainActivity.class"));
             try(DataOutputStream fos = new DataOutputStream(new FileOutputStream(clazzFile.toAbsolutePath().toString()))) {

@@ -1,11 +1,13 @@
 buildscript {
 
     repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
         google()
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.kezong:fat-aar:1.2.8'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -18,6 +20,7 @@ repositories {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'com.kezong.fat-aar'
 
 android {
     compileSdkVersion 28
@@ -44,6 +47,7 @@ android {
     }
 
     buildTypes {
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -56,16 +60,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = 1.7
+        targetCompatibility = 1.7
     }
 
 }
 
 dependencies {
-    implementation("com.google.guava:guava:28.2-jre")
-    implementation 'org.java-websocket:Java-WebSocket:1.4.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    embed 'org.slf4j:slf4j-api:1.7.30'
+    embed 'commons-io:commons-io:2.6'
+    embed 'org.java-websocket:Java-WebSocket:1.4.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

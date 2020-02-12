@@ -33,8 +33,8 @@ public class ApkPatcher {
         );
 
         repackApk(
-                unpackedDir,
-                apkPath.getParent().resolve("mc-patched.apk")
+               unpackedDir,
+               apkPath.getParent().resolve("mc-patched.apk")
         );
 
         System.out.println("Patched successfully");

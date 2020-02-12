@@ -2,26 +2,23 @@ package com.mjtg.neutron.runtime.loader;
 
 import android.content.Context;
 
-import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import com.mjtg.neutron.api.NeutronMod;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import dalvik.system.DexClassLoader;
-
-import static com.google.common.base.Joiner.on;
 
 public class NeutronModLoader {
 
@@ -52,7 +49,11 @@ public class NeutronModLoader {
         loader = classLoadMods(modJars);
 
         final ServiceLoader<NeutronMod> loader = ServiceLoader.load(NeutronMod.class, this.loader);
-        return Lists.newArrayList(loader.iterator());
+        List<NeutronMod> mod = new ArrayList<>();
+        for (NeutronMod neutronMod : loader) {
+            mod.add(neutronMod);
+        }
+        return mod;
     }
 
     private List<File> downloadMods(String modsPath) {
@@ -63,7 +64,7 @@ public class NeutronModLoader {
             for(String mod: modList) {
                 final ByteBuffer buffer = protocolClient.fetchMod(mod).get();
                 final File file = new File(modsPath+File.separator+mod);
-                Files.write(buffer.array(), file);
+                FileUtils.writeByteArrayToFile(file, buffer.array());
                 jarFiles.add(file);
             }
             return jarFiles;
@@ -77,11 +78,13 @@ public class NeutronModLoader {
     }
 
     private DexClassLoader classLoadMods(List<File> modJars) {
+        StringJoiner joiner = new StringJoiner(File.pathSeparator);
+        for (File modJar : modJars) {
+            joiner.add(modJar.getAbsolutePath());
+        }
+
         return new DexClassLoader(
-                on(File.pathSeparator)
-                        .join(
-                                modJars.stream().map(File::getAbsolutePath).collect(Collectors.toList())
-                        ),
+                joiner.toString(),
                 context.getCodeCacheDir().getAbsolutePath(),
                 null,
                 getClass().getClassLoader()

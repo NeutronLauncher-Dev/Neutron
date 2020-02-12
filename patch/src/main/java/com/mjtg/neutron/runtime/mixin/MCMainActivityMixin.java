@@ -11,13 +11,12 @@ public class MCMainActivityMixin {
 
     private NeutronRuntime runtime;
 
-    public MCMainActivityMixin(Object mcActivity) {
+    public MCMainActivityMixin() {}
+
+    public void onCreate(Object mcActivity) {
+        Log.i("Neutron-Mixin", "intercepted MinecraftActivity::onCreate!");
         this.mcActivity = mcActivity;
         runtime = new NeutronRuntime((Activity)mcActivity);
-    }
-
-    public void onCreate() {
-        Log.i("Neutron-Mixin", "intercepted MinecraftActivity::onCreate!");
         runtime.start();
     }
 
