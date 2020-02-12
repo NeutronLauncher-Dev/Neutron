@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".FileActivity" />
+        <activity android:name=".SelectActivity" />
     </application>
 
 </manifest>
