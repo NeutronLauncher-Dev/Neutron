@@ -34,7 +34,7 @@ public class ZipUtil {
                         //bug: you need to have \ as pathSeparator to please android!
                         if(File.separatorChar != '/') {
                             if(File.separatorChar == '\\') {
-                                fileNameWithPath.replace('\\','/');
+                                fileNameWithPath = fileNameWithPath.replace('\\','/');
                             } else {
                                 //we dont know how to fix it for you, so we fail to tell you about it
                                 throw new AssertionError("error in translating path separator, please add it here!");

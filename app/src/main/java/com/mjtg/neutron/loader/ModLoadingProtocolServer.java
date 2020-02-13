@@ -27,9 +27,9 @@ public class ModLoadingProtocolServer extends WebSocketServer {
     //a function that returns a list of mods to load
     private Supplier<List<String>> fetchModList;
     //a function that turns a mod name into a path to it's jar, return null if the mod not exists
-    private Function<String, Path> fetchMod;
+    private Function<String, InputStream> fetchMod;
 
-    public ModLoadingProtocolServer(Supplier<List<String>> fetchModList, Function<String, Path> fetchMod) {
+    public ModLoadingProtocolServer(Supplier<List<String>> fetchModList, Function<String, InputStream> fetchMod) {
         super( new InetSocketAddress( 32770 ) );
         this.fetchModList = fetchModList;
         this.fetchMod = fetchMod;
@@ -43,13 +43,16 @@ public class ModLoadingProtocolServer extends WebSocketServer {
 
     @Override
     public void onMessage( WebSocket conn, String message ) {
+        Log.d("Neutron-ModServer", "onMessage: received message from client: "+message);
         try {
             final JSONObject json = new JSONObject(message);
             switch(json.getString("type")) {
                 case "listMods":
                     handleListMods(conn, json);
+                    break;
                 case "fetchMod":
                     handleFetchMod(conn, json);
+                    break;
             }
         } catch (JSONException e) {
             Log.w("Neutron-ModServer", "onMessage: received invalid message from client: "+message, e);
@@ -59,18 +62,12 @@ public class ModLoadingProtocolServer extends WebSocketServer {
 
     private void handleFetchMod(WebSocket conn, JSONObject json) throws JSONException {
         final String name = json.getString("modName");
-        final Path path = fetchMod.apply(name);
-        if(path == null) {
-            Log.w("Neutron-ModServer", "onMessage: received invalid message from client: "+json.toString());
+        try(InputStream path = fetchMod.apply(name)) {
+            final byte[] read = ByteStreams.toByteArray(path);
+            conn.send(read);
+        } catch (IOException e) {
+            Log.w("Neutron-ModServer", "onMessage: unable to read name: "+name, e);
             conn.close();
-        } else {
-            try (InputStream is = new BufferedInputStream(new FileInputStream(path.toString()))){
-                final byte[] read = ByteStreams.toByteArray(is);
-                conn.send(read);
-            } catch (IOException e) {
-                Log.w("Neutron-ModServer", "onMessage: unable to read name: "+name, e);
-                conn.close();
-            }
         }
     }
 
@@ -82,6 +79,7 @@ public class ModLoadingProtocolServer extends WebSocketServer {
 
     @Override
     public void onError( WebSocket conn, Exception ex ) {
+        Log.w("Neutron-ModServer", "onError: error trying to start Mod Server!", ex);
         if( conn != null ) {
             // some errors like port binding failed may not be assignable to a specific websocket
         }
@@ -89,6 +87,7 @@ public class ModLoadingProtocolServer extends WebSocketServer {
 
     @Override
     public void onStart() {
+        Log.d("Neutron-ModServer", "server is now up and running!");
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
     }

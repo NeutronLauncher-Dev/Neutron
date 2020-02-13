@@ -1,6 +1,7 @@
 package com.mjtg.neutron.runtime.loader;
 
 
+import android.util.Base64;
 import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
@@ -34,6 +35,7 @@ public class ModLoadingProtocolClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
+        Log.d("Neutron-ModClient", "onMessage: received message from server: "+message);
         if(stringMessageConsumer!=null) {
             stringMessageConsumer.accept(message);
         }
@@ -41,6 +43,7 @@ public class ModLoadingProtocolClient extends WebSocketClient {
 
     @Override
     public void onMessage(ByteBuffer bytes) {
+        Log.d("Neutron-ModServer", "onMessage: received message from server: "+ Base64.encodeToString(bytes.array(), Base64.DEFAULT));
         if(bytesMessageConsumer != null){
             bytesMessageConsumer.accept(bytes);
         }
@@ -48,7 +51,7 @@ public class ModLoadingProtocolClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        Log.e("Neutron-ModLoader", "connection closed");
+        Log.e("Neutron-ModLoader", "connection unexpectedly closed");
     }
 
     @Override
@@ -75,6 +78,8 @@ public class ModLoadingProtocolClient extends WebSocketClient {
                     for (int i = 0; i < json.length(); i++) {
                         resp.add(json.getString(i));
                     }
+                    Log.d("AAA", "completing the future!");
+                    fut.complete(resp);
                 } catch (Exception e) {
                     fut.completeExceptionally(e);
                 }
@@ -107,7 +112,7 @@ public class ModLoadingProtocolClient extends WebSocketClient {
             @Override
             public void accept(ByteBuffer bytes) {
                 inProgress = false;
-                stringMessageConsumer = null;
+                bytesMessageConsumer = null;
                 fut.complete(bytes);
             }
         };

@@ -3,6 +3,7 @@ package com.mjtg.neutron.patcher;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -31,9 +32,9 @@ public class Main {
                 .build()
                 .parse(args);
 
-        Path apkPath = Paths.get(cmdArgs.apkFile);
-        List<Path> rtJars = cmdArgs.rtJars.stream().map(i -> Paths.get(i)).collect(Collectors.toList());
-        List<Path> libs = cmdArgs.libraries.stream().map(i -> Paths.get(i)).collect(Collectors.toList());
+        Path apkPath = Paths.get(new File(cmdArgs.apkFile).getAbsolutePath());
+        List<Path> rtJars = cmdArgs.rtJars.stream().map(i -> Paths.get(new File(i).getAbsolutePath())).collect(Collectors.toList());
+        List<Path> libs = cmdArgs.libraries.stream().map(i -> Paths.get(new File(i).getAbsolutePath())).collect(Collectors.toList());
 
         ApkPatcher.start(apkPath, rtJars, libs);
     }

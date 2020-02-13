@@ -24,6 +24,10 @@ public class NeutronRuntime {
         NeutronModLoader loader = new NeutronModLoader(context);
         mods = loader.loadMods();
         Log.i("Neutron-ModLoader", String.format("loaded %d mods", mods.size()));
+        Log.i("Neutron-ModLoader", String.format("running onLoad..."));
+        for (NeutronMod mod : mods) {
+            mod.onLoad();
+        }
     }
 
     public void start() {
