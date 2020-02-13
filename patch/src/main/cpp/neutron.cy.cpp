@@ -39,6 +39,9 @@ char* JstringToChar(JNIEnv* env, jstring jstr) {
 //METHODS INSTANCE
 
 void* mcClient;
+JNIEnv* env = NULL;
+jmethod cid;
+jclass cls;
 void (*displayClientMessage)(void*,std::string const&);
 
 void* (*getGuiData)(void*);
@@ -50,7 +53,8 @@ void onMinecraftClientInit(void*thiz){
 }
 void (*useItem)(void*,void*,bool);
 void onUseItem(void * itemStack,void * itemUseMethod,bool boo){
-
+    jobject job=(*env)->NewObject(env,cls,(*env)->GetMethodID(env,cls,"<init>","()V"),NULL);
+    (*env)->CallVoidMethod(env,job,cid,itemStack,itemUseMethod,boo);
     //todo
 }
 void displayClientMessage_(std::string const& str){
@@ -101,7 +105,18 @@ static int registerNatives(JNIEnv* env){
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved){
 
+        if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+            return -1;
+        }
+        assert(env != NULL);
+        if(!registerNatives(env)){
+            return -1;
+        }
+        cls = (*env)->FindClass(env,"com/mjtg/neutron/runtime/NeutronHooks");
+        cid =(*env)->GetMethodID(env,cls,"onUseItem","(Ljava.lang.Object;Ljava.lang.Object;Z)V");
+
         void * image = dlopen("libminecraftpe.so",RTLD_LAZY);
+
 
         MSHookFunction(dlsym(image,"_ZN15MinecraftClient4initEv"),(void*)&onMinecraftClientInit,(void**)&minecraftClientInit);
         MSHookFunction(dlsym(image,"_ZN6Player7useItemER9ItemStack13ItemUseMethodb"),(void*)&onUseItem,(void**)&useItem);
@@ -115,13 +130,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved){
         displayClientMessage= (void(*)(void*,std::string const&)) dlsym(image,"_ZN7GuiData20displayClientMessageERKSs");
 
 
-    JNIEnv* env = NULL;
-    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-        return -1;
-    }
-    assert(env != NULL);
-    if(!registerNatives(env)){
-        return -1;
-    }
+
+
     return JNI_VERSION_1_6;
 }
