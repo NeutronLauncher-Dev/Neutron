@@ -5,6 +5,8 @@
     <string name="title_select_activity">管理插件</string>
     <string name="alert">提示</string>
     <string name="title_setting_activity">设置</string>
-    <string name="about_text">版本：0.00000000000000001</string>
+    <string name="version_text">版本</string>
+    <string name="people_text">开发人员</string>
     <string name="title_about_activity">关于</string>
+    <string name="feed_back_text">反馈</string>
 </resources>
