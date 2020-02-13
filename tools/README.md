@@ -1,4 +1,4 @@
-# Patcher for Minecraft APK
+# Tools for Neutron Modding
 
 ## Functionality
 
@@ -20,3 +20,5 @@ the result will be put in to mc-patched.apk in the current working directory
 Note: THIS IS USED TO INSTALL NEUTRON RUNTIME, so a runtime jar is always needed!
 
 Note: the outcome is a unsigned apk, you need to sign it to use it!
+
+# Packer for mincraft mod

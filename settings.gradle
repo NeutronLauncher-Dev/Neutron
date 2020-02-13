@@ -1,1 +1,1 @@
-include ':app', ':patcher'
+include ':app', ':tools'

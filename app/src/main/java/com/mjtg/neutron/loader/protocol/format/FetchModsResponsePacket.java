@@ -1,13 +1,16 @@
-package com.mjtg.neutron.runtime.loader.protocol;
-
-import android.util.JsonReader;
+package com.mjtg.neutron.loader.protocol.format;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FetchRuntimePacket extends Packet {
+import java.util.HashMap;
+import java.util.Map;
 
-    public static final String TYPE = "fetchRuntime";
+public class FetchModsResponsePacket extends Packet {
+
+    public static final String TYPE = "fetchModsResponsePacket";
+
+    public Map<String, byte[]> mods = new HashMap<>();
 
 
     @Override
@@ -19,16 +22,19 @@ public class FetchRuntimePacket extends Packet {
         try {
             return new JSONObject()
                     .put("type", TYPE)
+                    .put("mods", JSONUtils.encodeAsBase64Object(mods))
                     ;
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static FetchRuntimePacket fromJson(JSONObject obj) {
+    public static FetchModsResponsePacket fromJson(JSONObject obj) {
         try {
             if(obj.getString("type").equals(TYPE)) {
-                return new FetchRuntimePacket();
+                final FetchModsResponsePacket result = new FetchModsResponsePacket();
+                result.mods = JSONUtils.decodeAsBase64Object(obj.getJSONObject("mods"));
+                return result;
             } else {
                 throw new IllegalArgumentException("incorrect type");
             }

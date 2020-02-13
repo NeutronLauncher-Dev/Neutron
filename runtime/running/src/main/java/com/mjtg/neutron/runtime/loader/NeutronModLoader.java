@@ -3,7 +3,7 @@ package com.mjtg.neutron.runtime.loader;
 import android.content.Context;
 
 import com.mjtg.neutron.api.NeutronMod;
-import com.mjtg.neutron.runtime.loader.protocol.NeutronProtocolClient;
+import com.mjtg.neutron.runtime.loader.protocol.client.NeutronProtocolClient;
 
 import java.io.File;
 import java.util.ArrayList;

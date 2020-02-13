@@ -2,13 +2,13 @@ package com.mjtg.neutron.patcher;
 
 import com.googlecode.d2j.dex.Dex2jar;
 import com.googlecode.dex2jar.tools.BaksmaliBaseDexExceptionHandler;
+import com.mjtg.neutron.converter.DexJarConverter;
+import com.mjtg.neutron.util.ZipUtil;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -84,11 +83,7 @@ public class DexPatcher {
         System.out.println("Inserting java classes in jar");
         for (Path jar : jars) {
             System.out.println("inserting "+jar.getFileName());
-            try {
-                new ZipFile(jar.toAbsolutePath().toString()).extractAll(unpackedDexDir.toAbsolutePath().toString());
-            } catch (ZipException e) {
-                throw new RuntimeException(e);
-            }
+            ZipUtil.unzipDirectory(jar, unpackedDexDir);
         }
     }
 
@@ -120,15 +115,7 @@ public class DexPatcher {
                 tmp = realJar;
                 ZipUtil.zipDirectory(sourceDir, realJar.toAbsolutePath());
 
-                Class<?> c = Class.forName("com.android.dx.command.Main");
-                Method m = c.getMethod("main", String[].class);
-
-                List<String> ps = new ArrayList<>(Arrays.asList(
-                        "--dex", "--no-strict",
-                        "--output=" + dexPath.toAbsolutePath().toString(),
-                        realJar.toAbsolutePath().toString()
-                ));
-                m.invoke(null, new Object[] { ps.toArray(new String[0]) });
+                DexJarConverter.jar2dex(realJar, dexPath);
             } finally {
                 if (tmp != null) {
                     Files.deleteIfExists(tmp);

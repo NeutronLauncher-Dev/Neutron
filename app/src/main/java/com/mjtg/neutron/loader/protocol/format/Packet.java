@@ -1,4 +1,4 @@
-package com.mjtg.neutron.runtime.loader.protocol;
+package com.mjtg.neutron.loader.protocol.format;
 
 import org.json.JSONException;
 import org.json.JSONObject;

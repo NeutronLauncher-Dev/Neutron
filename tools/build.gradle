@@ -11,7 +11,7 @@ dependencies {
     implementation "com.beust:jcommander:1.71"
 }
 
-mainClassName = 'com.mjtg.neutron.patcher.Main'
+mainClassName = 'com.mjtg.neutron.cli.Main'
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"

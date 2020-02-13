@@ -1,8 +1,10 @@
-package com.mjtg.neutron.runtime.loader.protocol;
+package com.mjtg.neutron.runtime.loader.protocol.client;
 
 
 import android.util.Base64;
 import android.util.Log;
+
+import com.mjtg.neutron.runtime.loader.protocol.format.Packet;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

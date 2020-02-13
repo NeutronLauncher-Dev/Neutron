@@ -1,12 +1,8 @@
-package com.mjtg.neutron.runtime.loader.protocol;
-
-import android.util.Base64;
-import android.util.Pair;
+package com.mjtg.neutron.loader.protocol.format;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

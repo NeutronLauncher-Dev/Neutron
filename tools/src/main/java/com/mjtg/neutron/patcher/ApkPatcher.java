@@ -2,6 +2,7 @@ package com.mjtg.neutron.patcher;
 
 
 import com.google.common.io.Files;
+import com.mjtg.neutron.util.ZipUtil;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,7 +39,7 @@ public class ApkPatcher {
     private static Path unpackApk(Path apk) {
         System.out.println("Unpacking Apk...");
         Path unpackedDir = apk.getParent().resolve("temp");
-        ZipUtil.unzipDirectory(apk, unpackedDir);
+        com.mjtg.neutron.util.ZipUtil.unzipDirectory(apk, unpackedDir);
         return unpackedDir;
     }
 

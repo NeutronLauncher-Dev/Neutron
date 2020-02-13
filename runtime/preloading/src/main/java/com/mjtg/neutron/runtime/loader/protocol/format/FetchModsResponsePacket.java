@@ -1,15 +1,9 @@
-package com.mjtg.neutron.runtime.loader.protocol;
-
-import android.util.Base64;
-import android.util.Pair;
+package com.mjtg.neutron.runtime.loader.protocol.format;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class FetchModsResponsePacket extends Packet {

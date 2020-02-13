@@ -1,4 +1,11 @@
-package com.mjtg.neutron.runtime.loader.protocol;
+package com.mjtg.neutron.runtime.loader.protocol.client;
+
+import com.mjtg.neutron.runtime.loader.protocol.format.Packet;
+import com.mjtg.neutron.runtime.loader.protocol.ProtocolException;
+import com.mjtg.neutron.runtime.loader.protocol.format.FetchModsPacket;
+import com.mjtg.neutron.runtime.loader.protocol.format.FetchModsResponsePacket;
+import com.mjtg.neutron.runtime.loader.protocol.format.FetchRuntimePacket;
+import com.mjtg.neutron.runtime.loader.protocol.format.FetchRuntimeResponsePacket;
 
 import org.apache.commons.io.FileUtils;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
