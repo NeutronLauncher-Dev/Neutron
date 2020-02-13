@@ -1,5 +1,6 @@
 package com.mjtg.neutron;
 
+import android.content.Context;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
@@ -61,6 +62,19 @@ public final class FileUntil
             }
         }
     }
+    public static String readAssets(Context context, String fileName){
+        try {
+            InputStream is = context.getAssets().open(fileName);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            return new String(buffer, "utf-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public static String readFile(String path){
         StringBuilder res=new StringBuilder();
         try {
@@ -110,5 +124,6 @@ public final class FileUntil
         }
         return true;
     }
+
 
 }
