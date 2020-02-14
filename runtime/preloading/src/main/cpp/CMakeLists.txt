@@ -4,15 +4,13 @@ find_library( log-lib log )
 
 
 add_library(
-    neutron
+    stub
     SHARED
-        dummy.cpp
-        neutron.cy.cpp
+        stub.cpp
 )
 
 target_link_libraries(
-    neutron
+    stub
     PRIVATE
     ${log-lib}
-    ${CMAKE_SOURCE_DIR}/libsubstrate.so
 )

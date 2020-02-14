@@ -1,4 +1,14 @@
 apply plugin: 'java-library'
 
+repositories {
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+    google()
+    jcenter()
+}
+
 sourceCompatibility = "8"
 targetCompatibility = "8"
+
+dependencies {
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+}

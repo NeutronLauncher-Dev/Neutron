@@ -20,6 +20,14 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
 
+        ndk {
+            abiFilter 'armeabi-v7a'
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++14"
+            }
+        }
     }
 
     buildTypes {
@@ -34,12 +42,19 @@ android {
         targetCompatibility = 1.7
     }
 
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
 }
 
 dependencies {
     embed 'org.slf4j:slf4j-api:1.7.30'
     embed 'commons-io:commons-io:2.6'
     embed 'org.java-websocket:Java-WebSocket:1.4.0'
+    embed group: 'org.slf4j', name: 'slf4j-android', version: '1.7.30'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

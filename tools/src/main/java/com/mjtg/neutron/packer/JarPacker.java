@@ -32,11 +32,12 @@ public class JarPacker {
     }
 
     private static void repackJarWithDexInstead(Path unpackDir, Path dexPath, Path resultJar) {
+        System.out.println("repacking .dex and other than .class into .jar");
         try {
-            FileUtils.copyFile(dexPath.toFile(), unpackDir.toFile());
+            FileUtils.copyFile(dexPath.toFile(), unpackDir.resolve(dexPath.getFileName()).toFile());
             ZipUtil.zipDirectory(
-                    resultJar, resultJar.toAbsolutePath(),
-                    file->!file.getFileName().endsWith(".class")
+                    unpackDir, resultJar.toAbsolutePath(),
+                    file->!file.getFileName().toString().endsWith(".class")
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -44,6 +45,7 @@ public class JarPacker {
     }
 
     private static void packClassesToDex(Path tmpDir, Path dexPath) {
+        System.out.println("packing classes into dex");
         Path tmpJar = null;
         try {
             try {
@@ -51,10 +53,10 @@ public class JarPacker {
                 tmpJar = d2jDir.resolve("d2j-"+ Instant.now().getEpochSecond()+".jar");
                 ZipUtil.zipDirectory(
                         tmpDir, tmpJar.toAbsolutePath(),
-                        file->file.getFileName().endsWith(".class")
+                        file-> file.getFileName().toString().endsWith(".class")
                 );
 
-                DexJarConverter.dex2jar(dexPath, tmpJar);
+                DexJarConverter.jar2dex(tmpJar, dexPath);
 
             } finally {
                 if (tmpJar != null) {
@@ -67,6 +69,7 @@ public class JarPacker {
     }
 
     private static void unpackJars(List<Path> jarsToPack, Path unpackDir) {
+        System.out.println("unpacking jars");
         for (Path jar : jarsToPack) {
             try {
                 new ZipFile(jar.toFile()).extractAll(unpackDir.toAbsolutePath().toString());

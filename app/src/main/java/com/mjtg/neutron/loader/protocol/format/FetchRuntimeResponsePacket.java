@@ -14,7 +14,7 @@ public class FetchRuntimeResponsePacket extends Packet {
     public Map<String, byte[]> nativeLibraries = new HashMap<>();
 
     //map of dexname-binary value
-    public Map<String, byte[]> runtimeDexes = new HashMap<>();
+    public Map<String, byte[]> runtimeJars = new HashMap<>();
 
 
     @Override
@@ -27,7 +27,7 @@ public class FetchRuntimeResponsePacket extends Packet {
             return new JSONObject()
                     .put("type", TYPE)
                     .put("nativeLibs", JSONUtils.encodeAsBase64Object(nativeLibraries))
-                    .put("dexes", JSONUtils.encodeAsBase64Object(runtimeDexes))
+                    .put("jars", JSONUtils.encodeAsBase64Object(runtimeJars))
                     ;
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -39,7 +39,7 @@ public class FetchRuntimeResponsePacket extends Packet {
             if(obj.getString("type").equals(TYPE)) {
                 final FetchRuntimeResponsePacket result = new FetchRuntimeResponsePacket();
                 result.nativeLibraries = JSONUtils.decodeAsBase64Object(obj.getJSONObject("nativeLibs"));
-                result.runtimeDexes = JSONUtils.decodeAsBase64Object(obj.getJSONObject("dexes"));
+                result.runtimeJars = JSONUtils.decodeAsBase64Object(obj.getJSONObject("jars"));
                 return result;
             } else {
                 throw new IllegalArgumentException("incorrect type");

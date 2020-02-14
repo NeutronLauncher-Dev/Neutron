@@ -20,20 +20,18 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class NeutronProtocolClient {
+public class NeutronProtocolClient implements AutoCloseable {
 
     private static final String SERVER_URL = "ws://localhost:32770";
 
-    public void downloadRuntime(File runtimeDexDir, File runtimeNativeLibDir) {
-        NeutronWebSocketClient client = null;
+    private NeutronWebSocketClient protocolClient;
+
+    public void downloadRuntime(File runtimeJarDir, File runtimeNativeLibDir) {
         try {
-            client = new NeutronWebSocketClient(new URI(SERVER_URL));
-            if(!client.connectBlocking()) {
-                throw new WebsocketNotConnectedException();
-            }
+            createConnectClientIfNone();
 
             //fetch response
-            final Future<Packet> respFut = client.sendMessage(new FetchRuntimePacket());
+            final Future<Packet> respFut = protocolClient.sendMessage(new FetchRuntimePacket());
             FetchRuntimeResponsePacket resp;
             try {
                 resp = (FetchRuntimeResponsePacket) respFut.get(10, TimeUnit.SECONDS);
@@ -42,17 +40,17 @@ public class NeutronProtocolClient {
             }
 
             //prepare directories
-            mkdirsIfNotExists(runtimeDexDir);
+            mkdirsIfNotExists(runtimeJarDir);
             mkdirsIfNotExists(runtimeNativeLibDir);
 
             //extract response
             try {
-            for (Map.Entry<String, byte[]> entry : resp.runtimeDexes.entrySet()) {
-                File f = new File(runtimeDexDir.toString()+File.separator+entry.getKey());
+            for (Map.Entry<String, byte[]> entry : resp.runtimeJars.entrySet()) {
+                File f = new File(runtimeJarDir.toString()+File.separator+entry.getKey());
                     FileUtils.writeByteArrayToFile(f, entry.getValue());
             }
             } catch (IOException e) {
-                throw new RuntimeException("error writing dexes", e);
+                throw new RuntimeException("error writing jars", e);
             }
 
             try {
@@ -64,27 +62,17 @@ public class NeutronProtocolClient {
                 throw new RuntimeException("error writing native libraries", e);
             }
 
-        } catch (URISyntaxException e) {
-            throw new AssertionError(e);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new ProtocolException("error in waiting response", e);
-        } finally {
-            if(client!=null) {
-                client.close();
-            }
         }
     }
 
     public void downloadMods(File modsDir) {
-        NeutronWebSocketClient client = null;
         try {
-            client = new NeutronWebSocketClient(new URI(SERVER_URL));
-            if(!client.connectBlocking()) {
-                throw new WebsocketNotConnectedException();
-            }
+            createConnectClientIfNone();
 
             //fetch response
-            final Future<Packet> respFut = client.sendMessage(new FetchModsPacket());
+            final Future<Packet> respFut = protocolClient.sendMessage(new FetchModsPacket());
             FetchModsResponsePacket resp;
             try {
                 resp = (FetchModsResponsePacket) respFut.get(10, TimeUnit.SECONDS);
@@ -105,14 +93,8 @@ public class NeutronProtocolClient {
                 throw new RuntimeException("error writing mods", e);
             }
 
-        } catch (URISyntaxException e) {
-            throw new AssertionError(e);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new ProtocolException("error in waiting response", e);
-        } finally {
-            if(client!=null) {
-                client.close();
-            }
         }
     }
 
@@ -120,6 +102,28 @@ public class NeutronProtocolClient {
         if(!dir.exists()) {
             if(!dir.mkdirs()) {
                 throw new RuntimeException("unable to mkdir for runtimeDexDir: "+dir.toString());
+            }
+        }
+    }
+
+    @Override
+    public void close() {
+        if (protocolClient!=null) {
+            protocolClient.close();
+            protocolClient = null;
+        }
+    }
+
+    private void createConnectClientIfNone() {
+        if(protocolClient == null) {
+            try {
+                protocolClient = new NeutronWebSocketClient(new URI(SERVER_URL));
+                if (!protocolClient.connectBlocking()) {
+                    throw new WebsocketNotConnectedException();
+                }
+            } catch (URISyntaxException | InterruptedException e) {
+                protocolClient = null;
+                throw new RuntimeException(e);
             }
         }
     }

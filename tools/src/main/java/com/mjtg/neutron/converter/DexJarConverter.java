@@ -30,7 +30,6 @@ public class DexJarConverter {
     }
 
     public static void jar2dex(Path jarFile, Path dexFilePath) {
-        System.out.println("Performing Jar2Dex...");
         try {
             Class<?> c = Class.forName("com.android.dx.command.Main");
             Method m = c.getMethod("main", String[].class);

@@ -53,11 +53,14 @@ android {
 }
 
 dependencies {
-    embed 'org.slf4j:slf4j-api:1.7.30'
-    embed 'commons-io:commons-io:2.6'
-    embed 'org.java-websocket:Java-WebSocket:1.4.0'
+    //these 3 jars are already provided in preload-runtime, so we dont need them here
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.java-websocket:Java-WebSocket:1.4.0'
+
     testImplementation 'junit:junit:4.12'
     implementation project(":preloading")
+    embed project(":api")
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
