@@ -55,8 +55,8 @@ void onMinecraftClientInit(void*thiz){
     //todo
     minecraftClientInit(mcClient=thiz);
 }
-void (*useItem)(void* thisPtr, void* itemStackPtr, int32_t itemUseMethod, int8_t boo);
-void onUseItem(void* thisPtr, void* itemStackPtr, int32_t itemUseMethod, bool boo){
+void (*useItem)(int32_t thisPtr, int32_t itemStackPtr, int32_t itemUseMethod, int8_t boo);
+void onUseItem(int32_t thisPtr, int32_t itemStackPtr, int32_t itemUseMethod, int8_t boo){
     LOGI("intercepted onUseItem!");
     (env)->CallVoidMethod(instance,cid,itemStackPtr, itemUseMethod,boo);
     useItem(thisPtr, itemStackPtr, itemUseMethod, boo);

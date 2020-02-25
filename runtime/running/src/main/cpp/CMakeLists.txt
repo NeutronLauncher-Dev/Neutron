@@ -14,5 +14,5 @@ target_link_libraries(
     neutron
     PRIVATE
     ${log-lib}
-    ${CMAKE_SOURCE_DIR}/libsubstrate.so
+    ${CMAKE_SOURCE_DIR}/libs/libsubstrate.so
 )

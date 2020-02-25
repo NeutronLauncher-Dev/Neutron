@@ -33,7 +33,7 @@ public class ApkPatcher {
                apkPath.getParent().resolve("mc-patched.apk")
         );
 
-        System.out.println("Patched successfully");
+        System.out.println("Patched successfully, result saved to mc-patched.apk");
     }
 
     private static Path unpackApk(Path apk) {

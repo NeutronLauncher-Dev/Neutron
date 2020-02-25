@@ -6,16 +6,52 @@ import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 import net.lingala.zip4j.model.ZipParameters;
 
 import java.io.File;
+import java.nio.file.CopyOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.function.Predicate;
 
 public class ZipUtil {
+
+    public static List<Path> unzipFiles(Path zipPath, Path intoDirectoryPath, Predicate<Path> toUnzip) {
+        ArrayList<Path> paths = new ArrayList<>();
+        try (FileSystem zipFileSystem = FileSystems.newFileSystem(zipPath, null)) {
+            final Path root = zipFileSystem.getPath("/");
+            //walk the zip file tree and copy files to the destination
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
+                @Override
+                public FileVisitResult visitFile(Path o, BasicFileAttributes basicFileAttributes) throws IOException {
+                    if(!toUnzip.test(o)) {
+                        //if reject, ignore
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        String cleanedPath = o.toString().substring(1).replace('\\', File.pathSeparatorChar);
+                        Path path = intoDirectoryPath.resolve(cleanedPath).normalize().toAbsolutePath();
+                        paths.add(path);
+                        System.out.println(path);
+                        final File file = path.toFile();
+                        file.getParentFile().mkdirs();
+                        Files.copy(o, path, StandardCopyOption.REPLACE_EXISTING);
+                        return FileVisitResult.CONTINUE;
+                    }
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return paths;
+    }
 
     public static void unzipDirectory(Path zipPath, Path intoDirectoryPath) {
         try {
@@ -26,7 +62,7 @@ public class ZipUtil {
     }
 
     public static void zipDirectory(Path directoryPath, Path zipPath) {
-        zipDirectory(directoryPath, zipPath, path -> true);
+        zipDirectory(directoryPath, zipPath, p->true);
     }
 
     public static void zipDirectory(Path directoryPath, Path zipPath, Predicate<Path> toZipInto) {

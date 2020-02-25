@@ -4,6 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.mjtg.neutron.packer.JarPacker;
 import com.mjtg.neutron.patcher.ApkPatcher;
+import com.mjtg.neutron.patcher.PatchApkFromRuntimeAARCommand;
+import com.mjtg.neutron.patcher.PrepareRuntimeDirFromAAR;
 import com.mjtg.neutron.util.PathUtil;
 
 import java.io.File;
@@ -14,6 +16,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Main {
+
+    public static class PackRuntimeFromAARCommandArgs {
+
+        @Parameter(names = "-aar", description = "path to the aar that is built by runtime/running")
+        public String aarFile;
+
+    }
+
+    public static class PatchFromAARCommandArgs {
+
+        @Parameter(names = "-aar", description = "path to the aar that is built by runtime/preloading")
+        public String aarFile;
+
+        @Parameter(names = "-apk", description = "path to the apk to patch")
+        public String apkFile;
+
+    }
 
     public static class PatcherCommandArgs {
 
@@ -36,11 +55,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        final PackRuntimeFromAARCommandArgs packRTArgs = new PackRuntimeFromAARCommandArgs();
+        final PatchFromAARCommandArgs aarCommandArgs = new PatchFromAARCommandArgs();
         PatcherCommandArgs patchArgs = new PatcherCommandArgs();
         PackerCommandArgs packArgs = new PackerCommandArgs();
         JCommander cmder = JCommander.newBuilder()
                 .addCommand("patch", patchArgs)
                 .addCommand("pack", packArgs)
+                .addCommand("patch-aar", aarCommandArgs)
+                .addCommand("pack-runtime", packRTArgs)
                 .build()
                 ;
 
@@ -56,8 +79,26 @@ public class Main {
             PathUtil.ensureDirExists(tmpPath);
             List<Path> libs = packArgs.jars.stream().map(i -> Paths.get(new File(i).getAbsolutePath())).collect(Collectors.toList());
             JarPacker.packJar(tmpPath, libs, Paths.get("./packed.jar"));
+            System.out.println("packed to packed.jar");
+        } else if(cmder.getParsedCommand().equals("patch-aar")) {
+            final Path tmpPath = Paths.get("./aarTemp");
+            PathUtil.ensureDirExists(tmpPath);
+            PatchApkFromRuntimeAARCommand.run(
+                    Paths.get(new File(aarCommandArgs.apkFile).getAbsolutePath()),
+                    Paths.get(new File(aarCommandArgs.aarFile).getAbsolutePath()),
+                    tmpPath
+            );
+        } else if(cmder.getParsedCommand().equals("pack-runtime")) {
+            final Path aarTmpPath = Paths.get("./aarTemp2");
+            PathUtil.ensureDirExists(aarTmpPath);
+            final Path runtimePath = Paths.get("./runtime");
+            runtimePath.toFile().mkdir();
+            PrepareRuntimeDirFromAAR.run(
+                    runtimePath,
+                    Paths.get(new File(packRTArgs.aarFile).getAbsolutePath()),
+                    aarTmpPath
+            );
         }
-
     }
 
 }
