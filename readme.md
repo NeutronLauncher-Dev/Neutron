@@ -12,4 +12,3 @@ We have a strong team.
 
 我们承接渔业项目、传信工作，工资面议。水利工程同时考虑。
 
-听说昨天有人把ReadMe.md删掉了？
